@@ -1,6 +1,8 @@
 import pytest
 from tests.base_test import BaseTest
 from tests.conftest import get_api_client
+from tests.conftest import env_variables
+import oc_utils
 
 
 class TestInstall(BaseTest):
@@ -11,3 +13,9 @@ class TestInstall(BaseTest):
         new_cluster.prepare_for_install(nodes=nodes)
         # Install Cluster
         new_cluster.start_install_and_wait_for_installed()
+
+        # Check that metal3 is enabled for versions > 4.6
+        major, minor = openshift_version.split(".")
+        if (int(major) == 4 and int(minor) > 6) or int(major) > 4:
+            new_cluster.download_kubeconfig(env_variables['kubeconfig_path'])
+            oc_utils.check_metal3(env_variables['kubeconfig_path'])
